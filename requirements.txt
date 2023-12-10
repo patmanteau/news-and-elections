@@ -17,3 +17,4 @@ dask
 jsonlines
 spacyfishing
 scrapy
+scrapy-playwright

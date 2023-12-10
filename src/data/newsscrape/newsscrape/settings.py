@@ -12,6 +12,7 @@ BOT_NAME = "newsscrape"
 SPIDER_MODULES = ["newsscrape.spiders"]
 NEWSPIDER_MODULE = "newsscrape.spiders"
 
+PLAYWRIGHT_CDP_URL = "http://localhost:31337"
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = "newsscrape (+http://www.yourdomain.com)"
