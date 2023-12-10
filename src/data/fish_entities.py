@@ -40,12 +40,12 @@ def main(input_filepath, output_filepath):
     def do_extract_entities(df, partition_info: dict):
         file_name = f"{output_filepath}/2_5_processed-{partition_info['number']}.jsonl"
 
-        with jl.open(file_name, "w") as f_out:
-            for text in df.loc[:, ["url", "fulltext"]].itertuples():
-                doc = nlp(text.fulltext)
-                entities = entity_list(doc)
-                for entity in entities:
-                    f_out.write(dict(url=text.url, **entity))
+            with jl.open(file_name, "w") as f_out:
+                for text in df.loc[:, ["url", "fulltext", "sections"]].itertuples():
+                    doc = nlp(text.fulltext)
+                    entities = entity_list(doc)
+                    for entity in entities:
+                        f_out.write(dict(url=text.url, sections=text.sections, **entity))
 
     ddf_text = dd.from_pandas(articles, chunksize=200)
 
