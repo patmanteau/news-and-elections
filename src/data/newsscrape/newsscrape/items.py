@@ -13,3 +13,4 @@ class NewsscrapeItem(scrapy.Item):
     shorttext = scrapy.Field()
     fulltext = scrapy.Field()
     url = scrapy.Field()
+    sections = scrapy.Field()

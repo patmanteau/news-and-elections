@@ -43,6 +43,7 @@ class TagesspiderSpider(CrawlSpider):
             # try to get the article's url and scrape its full text
             item["url"] = article.css(".teaser-right__link::attr(href)").get()
             if item["url"]:
+                item["sections"] = item["url"][1:].split('/')[:-1]
                 yield scrapy.Request(
                     f'https://www.tagesschau.de{item["url"]}',
                     self.parse_full_text,
@@ -50,6 +51,7 @@ class TagesspiderSpider(CrawlSpider):
                 )
             else:
                 item["fulltext"] = None
+                item["sections"] = []
                 yield item
 
     def parse_full_text(self, response, item):
