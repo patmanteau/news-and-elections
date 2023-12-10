@@ -8,6 +8,8 @@ from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 import spacy
 import pandas as pd
+import tempfile
+import shutil
 
 @click.command()
 @click.argument('input_filepath', type=click.Path(exists=True))
