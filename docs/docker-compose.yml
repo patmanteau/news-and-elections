@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+   entity-fishing:
+    image: grobid/entity-fishing:0.0.6
+    restart: always
+    ports:
+      - 8090:8090
+      - 8091:8091
+    volumes:
+      - ./data/db/db-kb:/opt/entity-fishing/data/db/db-kb
+      - ./data/db/db-en:/opt/entity-fishing/data/db/db-en
+      - ./data/db/db-de:/opt/entity-fishing/data/db/db-de
