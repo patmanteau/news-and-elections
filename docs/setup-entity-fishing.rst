@@ -25,5 +25,5 @@ Launch ``entity-fishing``::
   $ sudo docker-compose pull
   $ sudo docker-compose up -d
 
-If everything working, you should now be able to access ``entity-fishing`` at
+If everything worked, you should now be able to access ``entity-fishing`` at
 http://localhost:8090
