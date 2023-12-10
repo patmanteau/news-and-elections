@@ -37,8 +37,12 @@ def main(input_filepath, output_filepath):
             for ent in doc.ents
         ]
 
-    def do_extract_entities(df, partition_info: dict):
-        file_name = f"{output_filepath}/2_5_processed-{partition_info['number']}.jsonl"
+    # write partitioned jsonl files into a temp dir
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        logger.info(f'working directory is {tmpdirname}')
+        
+        def do_extract_entities(df, partition_info: dict):
+            file_name = f"{tmpdirname}/entities-{partition_info['number']}.jsonl"
 
             with jl.open(file_name, "w") as f_out:
                 for text in df.loc[:, ["url", "fulltext", "sections"]].itertuples():
@@ -47,10 +51,16 @@ def main(input_filepath, output_filepath):
                     for entity in entities:
                         f_out.write(dict(url=text.url, sections=text.sections, **entity))
 
-    ddf_text = dd.from_pandas(articles, chunksize=200)
+        ddf_text = dd.from_pandas(articles, chunksize=200)
 
-    with ProgressBar():
-        ddf_text.map_partitions(do_extract_entities, meta=("entities", "object")).compute()
+        with ProgressBar():
+            ddf_text.map_partitions(do_extract_entities, meta=("entities", "object")).compute()
+
+        # read the partitioned jsonl files and write them into a single jsonl file
+        with open(output_filepath, "wb") as f_out:
+            for chunk in Path(tmpdirname).glob("*.jsonl"):
+                with open(chunk,"rb") as f_in:
+                    shutil.copyfileobj(f_in, f_out)
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
