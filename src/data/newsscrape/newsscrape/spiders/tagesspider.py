@@ -15,8 +15,14 @@ class TagesspiderSpider(CrawlSpider):
     # start_urls = list(urls())
 
     def start_requests(self):
-        base = datetime.datetime.today()
-        td = base - datetime.datetime.strptime("01-01-2015", "%d-%m-%Y")
+        # base = datetime.datetime.today()
+        # start date on commandline is mandatory, ISO format
+        # end date on commandline is optional, default is today
+        if hasattr(self, "end_date"):
+            base = datetime.datetime.strptime(self.end_date, "%Y-%m-%d")
+        else:
+            base = datetime.datetime.today()
+        td = base - datetime.datetime.strptime(self.start_date, "%Y-%m-%d")
         date_list = reversed(
             [base - datetime.timedelta(days=x) for x in range(td.days)]
         )
