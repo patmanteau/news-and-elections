@@ -1,14 +1,17 @@
-SOURCES = ["tagesschau_small"]
+SOURCES = ["tagesschau", "zeit"]
 
 rule all:
-    input: expand("data/processed/6_mentions_per_week_{src}.jsonl", src=SOURCES)
+    input: 
+        expand("data/processed/6_mentions_per_week_{src}.json", src=SOURCES),
+        expand("data/processed/6_mentions_per_section_per_week_{src}.json", src=SOURCES),
 
 # $(INTERIM_DATA_DIR)/2_entities_%.jsonl: src/data/fish_entities.py $(RAW_DATA_DIR)/1_scrape_%.jsonl
 # 	$(PYTHON_INTERPRETER) $^ $@
 
-rule run_scrapers:
-    output: expand("data/raw/1_scrape_{src}.jsonl", src=SOURCES)
-    shell: "cd src/data/newsscrape && scrapy crawl tagesspider -O ../../../{output}"
+# Assume scraped files exist, don't run scrapers by default
+# rule run_scrapers:
+#     output: expand("data/raw/1_scrape_{src}.jsonl", src=SOURCES)
+#     shell: "cd src/data/newsscrape && scrapy crawl tagesspider -O ../../../{output}"
 
 rule link_entities:
     input: "data/raw/1_scrape_{source}.jsonl"
@@ -36,5 +39,10 @@ rule merge_wikidata:
 
 rule mentions_per_week:
     input: "data/processed/5_{source}.jsonl"
-    output: "data/processed/6_mentions_per_week_{source}.jsonl"
+    output: "data/processed/6_mentions_per_week_{source}.json"
     shell: "python3 src/data/mentions_per_week.py {input} {output}"
+
+rule mentions_per_section_per_week:
+    input: "data/processed/5_{source}.jsonl"
+    output: "data/processed/6_mentions_per_section_per_week_{source}.json"
+    shell: "python3 src/data/mentions_per_section_per_week.py {input} {output}"
