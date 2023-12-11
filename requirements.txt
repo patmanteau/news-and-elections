@@ -19,3 +19,5 @@ jsonlines
 spacyfishing
 scrapy
 scrapy-playwright
+
+germansentiment

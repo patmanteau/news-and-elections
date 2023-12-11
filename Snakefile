@@ -1,4 +1,4 @@
-SOURCES = ["tagesschau"]
+SOURCES = ["tagesschau_small"]
 
 rule all:
     input: 
@@ -21,6 +21,12 @@ rule link_entities:
 
 # rule link_entities:
 #     input: expand("data/interim/2_entities_{source}.jsonl", source=SOURCES)
+
+rule detect_bert_sentiment:
+    input: "data/raw/1_scrape_{source}.jsonl"
+    output: "data/interim/2_sentiment_{source}.jsonl"
+    shell: 
+        "python3 src/data/german_bert_sentiment.py {input} {output}"
 
 rule catalog: 
     input: expand("data/interim/2_entities_{src}.jsonl", src=SOURCES)
