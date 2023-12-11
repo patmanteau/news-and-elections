@@ -4,6 +4,7 @@ rule all:
     input: 
         expand("data/processed/6_mentions_per_week_{src}.json", src=SOURCES),
         expand("data/processed/6_mentions_per_section_per_week_{src}.json", src=SOURCES),
+        expand("data/processed/2_sentiment_{src}.json", src=SOURCES),
 
 # $(INTERIM_DATA_DIR)/2_entities_%.jsonl: src/data/fish_entities.py $(RAW_DATA_DIR)/1_scrape_%.jsonl
 # 	$(PYTHON_INTERPRETER) $^ $@
