@@ -51,7 +51,7 @@ def main(input_filepath, output_filepath):
                     doc = nlp(text.fulltext)
                     entities = entity_list(doc)
                     for entity in entities:
-                        f_out.write(dict(url=text.url, sections=text.sections, **entity))
+                        f_out.write(dict(url=text.url, tstamp=text.tstamp, sections=text.sections, **entity))
 
         ddf_text = dd.from_pandas(articles, chunksize=200)
 
