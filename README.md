@@ -49,6 +49,8 @@ Project Organization
     │                         generated with `pip freeze > requirements.txt`
     │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
+    ├── Snakefile          <- Snakemake input file with data workflow definitions
+    ├── snakemake.yaml     <- Snakemake configuration file
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
