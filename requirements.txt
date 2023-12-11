@@ -2,6 +2,7 @@
 -e .
 
 # external requirements
+snakemake
 click
 Sphinx
 coverage
