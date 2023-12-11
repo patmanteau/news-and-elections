@@ -10,6 +10,9 @@ PROFILE = default
 PROJECT_NAME = news-and-elections
 PYTHON_INTERPRETER = python3
 
+RAW_DATA_DIR = data/raw
+INTERIM_DATA_DIR = data/interim
+
 ifeq (,$(shell which conda))
 HAS_CONDA=False
 else
@@ -30,12 +33,24 @@ data: requirements
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
 
 ## Fish for entities
-fish:
-	$(PYTHON_INTERPRETER) src/data/fish_entities.py data/raw/1_tagesschau.jsonl data/processed/2_entities.jsonl
+ENTITY_FILES := $(addprefix $(INTERIM_DATA_DIR)/, 2_entities_tagesschau_small.jsonl)
 
-## Crawl Wikidata entities
-wdcrawl:
-	cd src/data/wdscrape && scrapy crawl wdspider -a input_file=../../../data/processed/3_catalog.json -a output_file=../../../data/processed/4_wd-catalog.jsonl -O ../../../data/processed/4_wd-catalog.jsonl
+# $(INTERIM_DATA_DIR)/%_entities_2.jsonl: src/data/fish_entities.py $(RAW_DATA_DIR)/%_scrape_1.jsonl
+$(INTERIM_DATA_DIR)/2_entities_%.jsonl: src/data/fish_entities.py $(RAW_DATA_DIR)/1_scrape_%.jsonl
+	$(PYTHON_INTERPRETER) $^ $@
+
+extract_entities: $(ENTITY_FILES)
+
+#$(INTERIM_DATA_DIR)/catalog_3.json: src/data/list_entities.py $(ENTITY_FILES)
+$(INTERIM_DATA_DIR)/3_catalog.json: src/data/list_entities.py $(ENTITY_FILES)
+	$(PYTHON_INTERPRETER) $^ $@
+
+catalog: $(INTERIM_DATA_DIR)/3_catalog.json
+
+$(INTERIM_DATA_DIR)/4_wikidata-catalog.jsonl: $(INTERIM_DATA_DIR)/3_catalog.json
+	cd src/data/wdscrape && scrapy crawl wdspider -a input_file=../../../$^ -a output_file=../../../$@ -O ../../../$@
+
+wikidata-catalog: $(INTERIM_DATA_DIR)/4_wikidata-catalog.jsonl
 
 ## Delete all compiled Python files
 clean:
