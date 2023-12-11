@@ -1,4 +1,4 @@
-SOURCES = ["tagesschau", "zeit"]
+SOURCES = ["tagesschau"]
 
 rule all:
     input: 
