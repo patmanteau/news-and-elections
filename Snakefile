@@ -24,7 +24,7 @@ rule link_entities:
 
 rule detect_bert_sentiment:
     input: "data/raw/1_scrape_{source}.jsonl"
-    output: "data/interim/2_sentiment_{source}.jsonl"
+    output: "data/processed/2_sentiment_{source}.jsonl"
     shell: 
         "python3 src/data/german_bert_sentiment.py {input} {output}"
 
