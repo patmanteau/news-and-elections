@@ -52,3 +52,8 @@ rule mentions_per_section_per_week:
     input: "data/processed/5_{source}.jsonl"
     output: "data/processed/6_mentions_per_section_per_week_{source}.json"
     shell: "python3 src/data/mentions_per_section_per_week.py {input} {output}"
+
+rule jsonl_to_json:
+    input: "{foo}.jsonl"
+    output: "{foo}.json"
+    shell: "jq -s '.' {input} > {output}"
