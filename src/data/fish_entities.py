@@ -47,7 +47,7 @@ def main(input_filepath, output_filepath):
             file_name = f"{tmpdirname}/entities-{partition_info['number']}.jsonl"
 
             with jl.open(file_name, "w") as f_out:
-                for text in df.loc[:, ["url", "fulltext", "sections"]].itertuples():
+                for text in df.loc[:, ["tstamp", "url", "fulltext", "sections"]].itertuples():
                     doc = nlp(text.fulltext)
                     entities = entity_list(doc)
                     for entity in entities:
