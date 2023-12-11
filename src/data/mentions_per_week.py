@@ -20,7 +20,7 @@ def main(input_filepath, output_filepath):
     # Group by day and entity, then count occurrences
     mentions_per_week = df.groupby([pd.Grouper(key='tstamp', freq='W'), 'wd_id', 'label', 'wd_label', 'wd_description']).size().reset_index(name='count')
     mentions_per_week.sort_values(by='tstamp', inplace=True)
-    mentions_per_week.to_json(output_filepath, orient="records", date_format='iso', lines=True)
+    mentions_per_week.to_json(output_filepath, orient="records", date_format='iso', indent=2)
     # with jsonlines.open(output_filepath, "w") as f:
     #     f.write_all(mentions_per_week.to_dict(orient="records"))
 
