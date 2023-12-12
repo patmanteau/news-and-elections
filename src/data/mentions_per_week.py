@@ -18,11 +18,11 @@ def main(input_filepath, output_filepath):
     df['tstamp'] = df['tstamp'].apply(lambda x: pd.Timestamp(x, unit='s', tz='Europe/Berlin'))
 
     # Group by day and entity, then count occurrences
-    mentions_per_week = df.groupby([pd.Grouper(key='tstamp', freq='W'), 'wd_id', 'label', 'wd_label', 'wd_description']).size().reset_index(name='count')
-    mentions_per_week.sort_values(by='tstamp', inplace=True)
-    mentions_per_week.to_json(output_filepath, orient="records", date_format='iso', indent=2)
+    mentions = df.groupby([pd.Grouper(key='tstamp', freq='W'), 'wd_id']).size().reset_index(name='count')
+    mentions.sort_values(by='tstamp', inplace=True)
+    mentions.to_json(output_filepath, orient="records", date_format='iso', lines=True)
     # with jsonlines.open(output_filepath, "w") as f:
-    #     f.write_all(mentions_per_week.to_dict(orient="records"))
+    #     f.write_all(mentions.to_dict(orient="records"))
 
 
 if __name__ == '__main__':
