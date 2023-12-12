@@ -19,9 +19,9 @@ def main(input_filepath, output_filepath):
     df['section'] = df['sections'].apply(lambda x: x[0] if x else None)
 
     # Group by day and entity, then count occurrences
-    mentions = df.groupby([pd.Grouper(key='tstamp', freq='W'), 'section', 'fulltext_sentiment', 'wd_id']).size().reset_index(name='count')
+    mentions = df.groupby([pd.Grouper(key='tstamp', freq='W'), 'section', 'shorttext_sentiment', 'wd_id']).size().reset_index(name='count')
     mentions.sort_values(by='tstamp', inplace=True)
-    mentions.rename(columns={'fulltext_sentiment': 'sentiment'}, inplace=True)
+    mentions.rename(columns={'shorttext_sentiment': 'sentiment'}, inplace=True)
     mentions.to_json(output_filepath, orient='records', date_format='iso', lines=True)
     # with jsonlines.open(output_filepath, "w") as f:
     #     f.write_all(mentions.to_dict(orient="records"))
