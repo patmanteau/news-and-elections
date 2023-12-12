@@ -1,0 +1,3 @@
+[submodule "src/models/GerVADER"]
+	path = src/models/GerVADER
+	url = https://github.com/KarstenAMF/GerVADER.git
