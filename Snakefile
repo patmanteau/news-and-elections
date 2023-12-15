@@ -51,12 +51,12 @@ rule merge_sentiment:
     shell: "python3 src/data/merge_sentiment.py {input} {output}"
 
 rule mentions_per_week:
-    input: "data/processed/5_5_{source}.jsonl"
+    input: "data/interim/5_{source}.jsonl"
     output: "data/processed/6_mentions_per_week_{source}.jsonl"
     shell: "python3 src/data/mentions_per_week.py {input} {output}"
 
 rule mentions_per_section_per_week:
-    input: "data/processed/5_5_{source}.jsonl"
+    input: "/data/interim/5_{source}.jsonl
     output: "data/processed/6_mentions_per_section_per_week_{source}.jsonl"
     shell: "python3 src/data/mentions_per_section_per_week.py {input} {output}"
 
