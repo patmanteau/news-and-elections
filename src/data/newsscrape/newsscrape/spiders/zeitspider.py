@@ -2,11 +2,15 @@ import datetime
 import scrapy
 import os
 
+from hashlib import blake2b
+h = blake2b(digest_size=10)
+
 from dotenv import load_dotenv
 
 load_dotenv()  # take environment variables from .env.
 
 from scrapy_playwright.page import PageMethod
+from playwright.sync_api import expect 
 from ..items import NewsscrapeItem
 
 class ZeitspiderSpider(scrapy.Spider):
@@ -43,44 +47,6 @@ class ZeitspiderSpider(scrapy.Spider):
 
 
     def start_requests(self):
-        yield scrapy.Request(
-            "https://www.zeit.de/zustimmung",
-            callback=self.accept_ads,
-            meta=dict(
-                playwright=True,
-                playwright_include_page=True,
-            ),
-        )
-        
-        
-    async def accept_ads(self, response):
-        page = response.meta["playwright_page"]
-        await page.frame_locator("iframe[title='SP Consent Message']").get_by_role("button").click()
-        await page.screenshot(path="example.png", full_page=True)
-        await page.close()
-
-        yield scrapy.Request(
-            "https://meine.zeit.de/anmelden",
-            callback=self.login,
-            meta=dict(
-                playwright=True,
-                playwright_include_page=True,
-            ),
-        )
-
-
-    async def login(self, response):
-        username = os.getenv("ZEIT_USERNAME")
-        password = os.getenv("ZEIT_PASSWORD")
-        if not username and password:
-            raise ValueError("Please provide ZEIT_USERNAME and ZEIT_PASSWORD in .env")
-
-        page = response.meta["playwright_page"]
-        await page.fill("#login_email", username)
-        await page.fill("#login_pass", password)
-        await page.click("input[type='submit']")
-        await page.close()
-
         year = self.start_year
         issue = self.start_issue
         urls = []
@@ -99,24 +65,22 @@ class ZeitspiderSpider(scrapy.Spider):
                 meta=dict(
                     playwright=True,
                     # playwright_include_page=True,
+                    playwright_context="auth",
+                    playwright_context_kwargs={
+                        "storage_state": "state.json"
+                    },
                     # playwright_page_methods=[
-                    #     # PageMethod("click", selector="a[aria-controls^='truncated']")
-                    #     PageMethod("click", selector="a[aria-expanded='false']")
-                    # ]
+                    #     PageMethod('wait_for_load_state', state = 'domcontentloaded'),
+                    #     PageMethod("evaluate", "window.scrollBy(0, document.body.scrollHeight)"),
+                    # ]                ),
                 ),
             )
 
-
+        
+    
     def parse(self, response):
         # page = response.meta["playwright_page"]
         
-        # truncators = page.get_by_text("Weitere Artikel anzeigen").all()
-        # while truncators:
-        #     for truncator in truncators:
-        #         truncator.click()
-        #     truncators = page.get_by_text("Weitere Artikel anzeigen").all()
-        
-
         articles = response.css("article")
 
         for article in articles:
@@ -144,37 +108,66 @@ class ZeitspiderSpider(scrapy.Spider):
                     cb_kwargs={"item": item},
                     meta=dict(
                         playwright=True,
+                        playwright_include_page=True,
+                        # playwright_page=page,
+                        playwright_context="auth",
+                        playwright_context_kwargs={
+                            "storage_state": "state.json"
+                        },
+                        errback=self.errback_close_page,
+                        # playwright_page_methods=[
+                        #     PageMethod('wait_for_load_state', state = 'domcontentloaded'),
+                        #     PageMethod("evaluate", "window.scrollBy(0, document.body.scrollHeight)"),
+                        # ],
                     ),
                 )
             else:
-                item["fulltext"] = None
-                item["date"] = None
+                item["fulltext"] = ""
+                item["date"] = ""
+                
                 yield item
 
-            # item["tstamp"] = article.css("::attr(data-teaserdate)").get()
-            # item["title"] = article.css(".teaser-right__headline::text").get().strip()
-            # # naive datetime string
-            # item["date"] = article.css(".teaser-right__date::text").get().strip()
-            # item["shorttext"] = (
-            #     article.css(".teaser-right__shorttext::text").get().strip()
-            # )
 
-            # # try to get the article's url and scrape its full text
-            # item["url"] = article.css(".teaser-right__link::attr(href)").get()
-            # if item["url"]:
-            #     yield scrapy.Request(
-            #         f'https://www.tagesschau.de{item["url"]}',
-            #         self.parse_full_text,
-            #         cb_kwargs={"item": item},
-            #     )
-            # else:
-            #     item["fulltext"] = None
-            #     yield item
+    async def parse_full_item(self, response, item):
+        page = response.meta["playwright_page"]
+        # h.update(response.url.encode("utf-8"))
+        # urlhash = h.hexdigest()
+        # await page.screenshot(path=f"{urlhash}.png", full_page=True)
 
+        komplettansicht_url = response.xpath("//a[@class='article-toc__fullview']/@href").get()
+        self.logger.info(f"Komplettansicht URL: {komplettansicht_url}")
+        
+        
+        if komplettansicht_url:
+            yield scrapy.Request(
+                komplettansicht_url,
+                self.parse_full_item,
+                cb_kwargs={"item": item},
+                meta=dict(
+                    playwright=True,
+                    playwright_include_page=True,
+                    # playwright_page=page,
+                    playwright_context="auth",
+                    playwright_context_kwargs={
+                        "storage_state": "state.json"
+                    },
+                    errback=self.errback_close_page,
+                    # playwright_page_methods=[
+                    #     PageMethod('wait_for_load_state', state = 'domcontentloaded'),
+                    #     PageMethod("evaluate", "window.scrollBy(0, document.body.scrollHeight)"),
+                    # ],
+                ),
+            )
+            await page.close()
+        else:
+            item["fulltext"] = " ".join( 
+                [p.strip() for p in await page.locator(".paragraph").all_inner_texts()]
+            )
+            item["tstamp"] = await page.locator(".metadata__date > time").get_attribute("datetime")
+                 
             yield item
+            await page.close()
 
-    def parse_full_item(self, response, item):
-        item["fulltext"] = " ".join(
-            [p.strip() for p in response.css("article > p").css("::text").getall()]
-        )
-        yield item
+    async def errback_close_page(self, failure):
+        page = failure.request.meta["playwright_page"]
+        await page.close()
