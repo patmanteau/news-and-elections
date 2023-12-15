@@ -24,11 +24,17 @@ rule link_entities:
 # rule link_entities:
 #     input: expand("data/interim/2_entities_{source}.jsonl", source=SOURCES)
 
-rule detect_bert_sentiment:
+rule detect_germanbert_sentiment:
     input: "data/raw/1_scrape_{source}.jsonl"
-    output: "data/interim/2_sentiment_{source}.jsonl"
+    output: "data/interim/2_germanbert_sentiment_{source}.jsonl"
     shell: 
         "python3 src/data/german_bert_sentiment.py {input} {output}"
+
+rule detect_gervader_sentiment:
+    input: "data/raw/1_scrape_{source}.jsonl"
+    output: "data/interim/2_vader_sentiment_{source}.jsonl"
+    shell: 
+        "python3 src/data/gervader_sentiment.py {input} {output}"
 
 rule catalog: 
     input: expand("data/interim/2_entities_{src}.jsonl", src=SOURCES)
@@ -45,8 +51,8 @@ rule merge_wikidata:
     output: "data/interim/5_{source}.jsonl"
     shell: "python3 src/data/merge_wikidata.py {input} {output}"
 
-rule merge_sentiment:
-    input: "data/interim/2_sentiment_{source}.jsonl", "data/interim/5_{source}.jsonl"
+rule merge_vader_sentiment:
+    input: "data/interim/2_germanbert_sentiment_{source}.jsonl", "data/interim/5_{source}.jsonl"
     output: "data/processed/5_5_{source}.jsonl"
     shell: "python3 src/data/merge_sentiment.py {input} {output}"
 
