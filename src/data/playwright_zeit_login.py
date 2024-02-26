@@ -8,11 +8,13 @@ load_dotenv()  # take environment variables from .env.
 
 
 async def run(playwright: Playwright) -> None:
-    browser = await playwright.chromium.launch(headless=False)
+    browser = await playwright.chromium.launch(headless=True)
     context = await browser.new_context()
     page = await context.new_page()
     await page.goto("https://www.zeit.de/index")
-    await page.frame_locator("iframe[title=\"SP Consent Message\"]").get_by_role("button", name="Zustimmen und weiter").click()
+    await page.frame_locator('iframe[title="SP Consent Message"]').get_by_role(
+        "button", name="Zustimmen und weiter"
+    ).click()
     await page.get_by_role("button", name="Nutzermenü").click()
     await page.get_by_role("link", name="Anmelden").click()
     await page.get_by_placeholder("E-Mail-Adresse").click()
@@ -34,3 +36,4 @@ async def main() -> None:
 
 
 asyncio.run(main())
+
