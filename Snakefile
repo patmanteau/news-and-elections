@@ -96,3 +96,8 @@ rule jsonl_to_json:
     input: "{foo}.jsonl"
     output: "{foo}.json"
     shell: "jq -s '.' {input} > {output}"
+
+rule gzip:
+    input: "{foo}"
+    output: "{foo}.gz"
+    shell: "gzip -c {input} > {output}"
