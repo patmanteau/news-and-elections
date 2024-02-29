@@ -33,6 +33,15 @@ class TagesspiderSpider(CrawlSpider):
             )
 
     def parse(self, response):
+        next_ = response.css("li.next")
+        if next_:
+            # print(next_)
+            next_page = next_.css(".paginierung__liste--link::attr(href)").get()
+            if next_page:
+                yield scrapy.Request(
+                    url=f"https://www.tagesschau.de/archiv/{next_page}",
+                    callback=self.parse
+                )
         articles = response.css(".teaser-right")
         for article in articles:
             item = NewsscrapeItem()
