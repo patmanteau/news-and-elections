@@ -21,6 +21,7 @@ class WdspiderSpider(scrapy.Spider):
                         for item in wd_items.iter(type=dict, skip_invalid=True)
                     ]
                 )
+        self.logger.info(f"found {len(existing_entity_ids)} existing items")
 
         with open(self.input_file, "r") as f_in:
             req_entity_ids = json.load(f_in)
@@ -32,6 +33,8 @@ class WdspiderSpider(scrapy.Spider):
                     callback=self.parse,
                     cb_kwargs=dict(entity_id=req_entity_id),
                 )
+            else:
+                self.logger.info(f"I already know {req_entity_id}, skipping")
 
     def parse(self, response, entity_id):
         res = json.loads(response.body)

@@ -1,3 +1,6 @@
+# entity-fishing knowledge data
+models/entity-fishing/data
+
 # Snakemake
 .snakemake/
 
